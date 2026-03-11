@@ -5,7 +5,7 @@ class BPETokenizer:
 		self.raw_text: str = text
 		self.vocab: dict[str, int] = {}
 		self.word_freq: defaultdict[str, int] = defaultdict(int)
-		self.splits: defaultdict[tuple, int] = defaultdict(int)
+		self.splits: defaultdict[tuple[str, ...], int] = defaultdict(int)
 		self._build_word_freqs()
 		self._build_char_splits()
 
@@ -28,7 +28,66 @@ class BPETokenizer:
 
 
 	def _count_pairs(self) -> dict[tuple, int]:
-		for w, freq in self.splits.items():
+		pairs_count: defaultdict[tuple[str, str], int] = defaultdict(int)
 
-			# sliding window size 2
+		for w, freq in self.splits.items():
+			for i in range(len(w) - 1):
+				sub_word = (w[i], w[i + 1])
+				pairs_count[sub_word] += freq
+
+		return pairs_count
+
+	def train(self, num_merges: int) -> None:
+		for i in range(num_merges):
+			pairs_count = self._count_pairs()
+			if not pairs_count:
+				break
+			best_pair = max(pairs_count, key=pairs_count.get)
+			self._merge(best_pair)
+
+	def _merge(self, pair: tuple[str, str]) -> None:
+		new_splits: defaultdict[tuple[str, ...], int] = defaultdict(int)
+
+		for entry, freq in self.splits.items():
+			new_tokens: list[str] = []
+			i: int = 0
+			while i < len(entry):
+				if i < len(entry) - 1 and entry[i] == pair[0] and entry[i + 1] == pair[1]:
+					new_tokens.append(pair[0] + pair[1])
+					i += 2
+				else:
+					new_tokens.append(entry[i])
+					i += 1
+			new_splits[tuple(new_tokens)] = freq
+		self.splits = new_splits
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
