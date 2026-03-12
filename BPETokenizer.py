@@ -11,6 +11,7 @@ class BPETokenizer:
 		self._build_char_splits()
 		self._build_initial_vocab()
 
+	##
 
 	def _clean_text(self, text: str) -> str:
 		pass
@@ -72,6 +73,7 @@ class BPETokenizer:
 				if token not in self.vocab:
 					self.vocab[token] = token_id
 					token_id += 1
+
 
 
 
